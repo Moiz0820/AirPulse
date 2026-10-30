@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #121316;
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    margin: 0;
+    min-height: 100vh;
+  }
+}
+
+.telemetry-panel {
+  background-color: #181a20;
+  border: 1px solid #282c37;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+}
+
+.telemetry-card {
+  background-color: #1f222a;
+  border: 1px solid #2f3442;
+  transition: border-color 0.15s ease;
+}
+
+.telemetry-card:hover {
+  border-color: #f97316;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #121316;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #282c37;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f4556;
+}
