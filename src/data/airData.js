@@ -19,15 +19,43 @@ export const WHO_GUIDELINES = {
 };
 
 export const BASELINE_READINGS = {
-  dubai: { aqi: 58, pm2_5: 38.3, pm10: 73.3, no2: 58.9, o3: 62.0, co: 533, so2: 32.5 },
-  london: { aqi: 22, pm2_5: 8.4, pm10: 16.2, no2: 24.1, o3: 45.2, co: 260, so2: 4.1 },
-  'new-york': { aqi: 28, pm2_5: 11.2, pm10: 21.0, no2: 31.4, o3: 52.8, co: 310, so2: 5.6 },
-  tokyo: { aqi: 19, pm2_5: 6.9, pm10: 14.1, no2: 18.5, o3: 41.0, co: 220, so2: 3.2 },
-  singapore: { aqi: 31, pm2_5: 14.5, pm10: 27.8, no2: 22.0, o3: 38.5, co: 340, so2: 8.9 },
-  delhi: { aqi: 168, pm2_5: 112.4, pm10: 240.1, no2: 84.2, o3: 78.5, co: 1450, so2: 48.0 },
-  paris: { aqi: 25, pm2_5: 9.8, pm10: 18.4, no2: 26.5, o3: 49.0, co: 280, so2: 4.8 },
-  sydney: { aqi: 16, pm2_5: 5.2, pm10: 12.3, no2: 14.0, o3: 36.2, co: 190, so2: 2.1 },
+  dubai: { aqi: 39, pm2_5: 14.5, pm10: 29.6, no2: 10.7, o3: 97.0, co: 144, so2: 5.6 },
+  london: { aqi: 46, pm2_5: 12.2, pm10: 13.8, no2: 36.3, o3: 16.0, co: 207, so2: 4.0 },
+  'new-york': { aqi: 52, pm2_5: 11.0, pm10: 12.2, no2: 46.7, o3: 24.0, co: 238, so2: 1.6 },
+  tokyo: { aqi: 69, pm2_5: 57.2, pm10: 58.7, no2: 78.1, o3: 16.0, co: 1094, so2: 59.1 },
+  singapore: { aqi: 48, pm2_5: 12.0, pm10: 12.2, no2: 39.7, o3: 61.0, co: 222, so2: 22.4 },
+  delhi: { aqi: 125, pm2_5: 108.5, pm10: 142.0, no2: 9.4, o3: 205.0, co: 659, so2: 35.5 },
+  paris: { aqi: 49, pm2_5: 20.8, pm10: 23.3, no2: 40.6, o3: 2.0, co: 365, so2: 4.0 },
+  sydney: { aqi: 33, pm2_5: 11.3, pm10: 19.0, no2: 5.8, o3: 58.0, co: 79, so2: 2.6 },
 };
+
+/**
+ * Fetch live atmospheric telemetry for all 8 megacities simultaneously in a single API call
+ */
+export async function fetchAllMegacitiesTelemetry() {
+  try {
+    const lats = MEGACITIES.map((c) => c.lat).join(',');
+    const lngs = MEGACITIES.map((c) => c.lng).join(',');
+    const url = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lats}&longitude=${lngs}&current=european_aqi,pm10,pm2_5,carbon_monoxide,nitrogen_dioxide,sulphur_dioxide,ozone&hourly=pm10,pm2_5,ozone,nitrogen_dioxide&forecast_days=1`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Open-Meteo multi-city fetch failed');
+    const data = await res.json();
+
+    const cityMap = {};
+    if (Array.isArray(data)) {
+      MEGACITIES.forEach((c, idx) => {
+        cityMap[c.id] = data[idx];
+      });
+    } else {
+      // Single object fallback
+      cityMap[MEGACITIES[0].id] = data;
+    }
+    return cityMap;
+  } catch (err) {
+    console.warn('Live multi-city air quality fetch error, using harmonized baseline', err);
+    return null;
+  }
+}
 
 export async function fetchLiveAirQuality(lat, lng) {
   try {

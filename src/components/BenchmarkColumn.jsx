@@ -1,17 +1,24 @@
 import React from 'react';
 import { MEGACITIES, BASELINE_READINGS, WHO_GUIDELINES } from '../data/airData';
 
-export default function BenchmarkColumn({ selectedCity, onSelectCity }) {
-  // Sort cities by PM2.5 descending
+export default function BenchmarkColumn({ selectedCity, onSelectCity, telemetryMap }) {
+  // Sort cities by live PM2.5 descending
   const sortedMegacities = [...MEGACITIES].map((c) => {
+    const liveNode = telemetryMap?.[c.id]?.current;
     const base = BASELINE_READINGS[c.id] || { aqi: 0, pm2_5: 0, pm10: 0 };
-    const ratio = Math.round((base.pm2_5 / WHO_GUIDELINES.pm2_5.limit) * 100);
-    const delta = Math.round(((base.pm2_5 - WHO_GUIDELINES.pm2_5.limit) / WHO_GUIDELINES.pm2_5.limit) * 100);
+
+    const aqi = liveNode?.european_aqi !== undefined ? liveNode.european_aqi : base.aqi;
+    const pm2_5 = liveNode?.pm2_5 !== undefined ? Number(liveNode.pm2_5.toFixed(1)) : base.pm2_5;
+    const pm10 = liveNode?.pm10 !== undefined ? Number(liveNode.pm10.toFixed(1)) : base.pm10;
+
+    const ratio = Math.round((pm2_5 / WHO_GUIDELINES.pm2_5.limit) * 100);
+    const delta = Math.round(((pm2_5 - WHO_GUIDELINES.pm2_5.limit) / WHO_GUIDELINES.pm2_5.limit) * 100);
+
     return {
       ...c,
-      aqi: base.aqi,
-      pm2_5: base.pm2_5,
-      pm10: base.pm10,
+      aqi,
+      pm2_5,
+      pm10,
       ratio,
       delta,
     };

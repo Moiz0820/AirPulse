@@ -1,10 +1,11 @@
 import React from 'react';
 import { MEGACITIES, BASELINE_READINGS, WHO_GUIDELINES } from '../data/airData';
 
-export default function StationRoster({ selectedCity, onSelectCity, liveData }) {
+export default function StationRoster({ selectedCity, onSelectCity, telemetryMap }) {
   const getStatusBadge = (aqi) => {
     if (aqi > 100) return { label: 'HAZARDOUS', color: 'text-rose-400 border-rose-500/40 bg-rose-500/10' };
     if (aqi > 50) return { label: 'MODERATE', color: 'text-amber-400 border-amber-500/40 bg-amber-500/10' };
+    if (aqi > 25) return { label: 'FAIR', color: 'text-cyan-400 border-cyan-500/40 bg-cyan-500/10' };
     return { label: 'OPTIMAL', color: 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10' };
   };
 
@@ -16,10 +17,10 @@ export default function StationRoster({ selectedCity, onSelectCity, liveData }) 
           <span className="text-[10px] font-bold text-[#f97316] uppercase tracking-widest block">
             STATION ROSTER // 08 NODES
           </span>
-          <span className="text-[9px] text-zinc-500">CAMS TELEMETRY FEED</span>
+          <span className="text-[9px] text-zinc-500">LIVE CAMS TELEMETRY STREAM</span>
         </div>
         <span className="text-[9px] font-bold px-1.5 py-0.5 bg-[#27272a] text-zinc-300">
-          GLOBAL SCADA
+          SYNCHRONIZED
         </span>
       </div>
 
@@ -27,14 +28,12 @@ export default function StationRoster({ selectedCity, onSelectCity, liveData }) 
       <div className="space-y-1.5">
         {MEGACITIES.map((city) => {
           const isSelected = selectedCity.id === city.id;
+          const liveNode = telemetryMap?.[city.id]?.current;
           const baseline = BASELINE_READINGS[city.id] || { aqi: 0, pm2_5: 0 };
-          const aqi = isSelected && liveData?.current?.european_aqi !== undefined
-            ? liveData.current.european_aqi
-            : baseline.aqi;
+
+          const aqi = liveNode?.european_aqi !== undefined ? liveNode.european_aqi : baseline.aqi;
+          const pm25 = liveNode?.pm2_5 !== undefined ? Number(liveNode.pm2_5.toFixed(1)) : baseline.pm2_5;
           const status = getStatusBadge(aqi);
-          const pm25 = isSelected && liveData?.current?.pm2_5 !== undefined
-            ? liveData.current.pm2_5
-            : baseline.pm2_5;
           const whoRatio = Math.round((pm25 / WHO_GUIDELINES.pm2_5.limit) * 100);
 
           return (
@@ -95,8 +94,8 @@ export default function StationRoster({ selectedCity, onSelectCity, liveData }) 
           <span className="text-zinc-300 font-bold">15 μg/m³ (24h)</span>
         </div>
         <div className="flex justify-between">
-          <span>SENSOR NETWORK:</span>
-          <span className="text-emerald-400 font-bold">ALL 8 ONLINE</span>
+          <span>LIVE STREAM:</span>
+          <span className="text-emerald-400 font-bold">8/8 NODES ACTIVE</span>
         </div>
       </div>
     </div>

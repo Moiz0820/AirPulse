@@ -5,26 +5,29 @@ import TelemetryGauges from './components/TelemetryGauges';
 import DiurnalChart from './components/DiurnalChart';
 import BenchmarkColumn from './components/BenchmarkColumn';
 import Footer from './components/Footer';
-import { MEGACITIES, BASELINE_READINGS, fetchLiveAirQuality } from './data/airData';
+import { MEGACITIES, BASELINE_READINGS, fetchAllMegacitiesTelemetry } from './data/airData';
 
 export default function App() {
   const [selectedCity, setSelectedCity] = useState(MEGACITIES[0]); // Dubai default
-  const [liveData, setLiveData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [telemetryMap, setTelemetryMap] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
   const [lastSync, setLastSync] = useState(null);
 
-  const loadCityData = useCallback(async (city) => {
+  const loadAllTelemetry = useCallback(async () => {
     setIsLoading(true);
-    const data = await fetchLiveAirQuality(city.lat, city.lng);
-    setLiveData(data);
-    setLastSync(new Date().toLocaleTimeString('en-US', { hour12: false }));
+    const data = await fetchAllMegacitiesTelemetry();
+    if (data) {
+      setTelemetryMap(data);
+      setLastSync(new Date().toLocaleTimeString('en-US', { hour12: false }));
+    }
     setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    loadCityData(selectedCity);
-  }, [selectedCity, loadCityData]);
+    loadAllTelemetry();
+  }, [loadAllTelemetry]);
 
+  const activeLiveData = telemetryMap[selectedCity.id] || null;
   const baseline = BASELINE_READINGS[selectedCity.id] || BASELINE_READINGS.dubai;
 
   return (
@@ -33,7 +36,7 @@ export default function App() {
       <Header
         lastSync={lastSync}
         isLoading={isLoading}
-        onRefresh={() => loadCityData(selectedCity)}
+        onRefresh={loadAllTelemetry}
       />
 
       {/* Industrial Mission Control Wall: 3-Column Flight Deck */}
@@ -44,7 +47,7 @@ export default function App() {
             <StationRoster
               selectedCity={selectedCity}
               onSelectCity={setSelectedCity}
-              liveData={liveData}
+              telemetryMap={telemetryMap}
             />
           </div>
 
@@ -52,14 +55,14 @@ export default function App() {
           <div className="lg:col-span-6 space-y-4">
             <TelemetryGauges
               city={selectedCity}
-              liveData={liveData}
+              liveData={activeLiveData}
               baseline={baseline}
               isLoading={isLoading}
             />
 
             <DiurnalChart
               city={selectedCity}
-              liveData={liveData}
+              liveData={activeLiveData}
               baseline={baseline}
             />
           </div>
@@ -69,6 +72,7 @@ export default function App() {
             <BenchmarkColumn
               selectedCity={selectedCity}
               onSelectCity={setSelectedCity}
+              telemetryMap={telemetryMap}
             />
           </div>
         </div>
