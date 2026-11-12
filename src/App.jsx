@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
-import CitySelector from './components/CitySelector';
+import StationRoster from './components/StationRoster';
 import TelemetryGauges from './components/TelemetryGauges';
 import DiurnalChart from './components/DiurnalChart';
-import MegacityMatrix from './components/MegacityMatrix';
+import BenchmarkColumn from './components/BenchmarkColumn';
 import Footer from './components/Footer';
 import { MEGACITIES, BASELINE_READINGS, fetchLiveAirQuality } from './data/airData';
 
@@ -36,35 +36,42 @@ export default function App() {
         onRefresh={() => loadCityData(selectedCity)}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
-        {/* City Switcher Telemetry Ribbon */}
-        <CitySelector
-          cities={MEGACITIES}
-          selectedCity={selectedCity}
-          onSelectCity={setSelectedCity}
-        />
+      {/* Industrial Mission Control Wall: 3-Column Flight Deck */}
+      <main className="flex-1 max-w-[1536px] w-full mx-auto px-4 py-5 font-mono">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+          {/* Column 1: Station Roster & Feed (25% width / 3 cols) */}
+          <div className="lg:col-span-3">
+            <StationRoster
+              selectedCity={selectedCity}
+              onSelectCity={setSelectedCity}
+              liveData={liveData}
+            />
+          </div>
 
-        {/* Primary Multi-Pollutant Telemetry Gauges */}
-        <TelemetryGauges
-          city={selectedCity}
-          liveData={liveData}
-          baseline={baseline}
-          isLoading={isLoading}
-        />
+          {/* Column 2: Center Telemetry Stage (50% width / 6 cols) */}
+          <div className="lg:col-span-6 space-y-4">
+            <TelemetryGauges
+              city={selectedCity}
+              liveData={liveData}
+              baseline={baseline}
+              isLoading={isLoading}
+            />
 
-        {/* 24-Hour Diurnal Dispersion Chart */}
-        <DiurnalChart
-          city={selectedCity}
-          liveData={liveData}
-          baseline={baseline}
-        />
+            <DiurnalChart
+              city={selectedCity}
+              liveData={liveData}
+              baseline={baseline}
+            />
+          </div>
 
-        {/* Megacity Benchmark Matrix Table */}
-        <MegacityMatrix
-          selectedCity={selectedCity}
-          onSelectCity={setSelectedCity}
-        />
+          {/* Column 3: Differential Matrix & Telemetry Log (25% width / 3 cols) */}
+          <div className="lg:col-span-3">
+            <BenchmarkColumn
+              selectedCity={selectedCity}
+              onSelectCity={setSelectedCity}
+            />
+          </div>
+        </div>
       </main>
 
       {/* Industrial Footer */}
